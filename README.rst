@@ -22,8 +22,8 @@ format.  And newbie C# code.
 
 Many years ago, I started writing some code to do some things I wanted
 to do with MetaStock formatted stock market data, without using MetaStock,
-because Metastock was a `constant dissapointment to me. 
-http://www.voidynullness.net/blog/2012/01/28/hello-amibroker/>`_
+because MetaStock was a `constant disappointment to me. 
+<http://www.voidynullness.net/blog/2012/01/28/hello-amibroker/>`_
 
 I was learning C# at the time, so I used C# for no other reason than to
 practice coding in C#.
