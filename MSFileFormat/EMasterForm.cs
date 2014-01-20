@@ -1,9 +1,21 @@
 /*
- * Copyright (C) 2006-2014 Robert Iwancz
+ *  Copyright (C) 2006-2014 Robert Iwancz
  * 
- * Released under the GNU General Public License.  See LICENSE.TXT
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * 
  */
+
 using System;
 using System.Collections;
 using System.ComponentModel;
@@ -29,10 +41,10 @@ namespace MSFileFormat
                 LoadEMasterFile(DataFileName);
             }
             else {
-                MessageBox.Show("Unable to find an EMASTER file in directory " + dir, "File Does Not Exist", 
-                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show("Unable to find an EMASTER file in directory " + dir, 
+                                "File Does Not Exist",
+                                MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
-
         }
 
 		private EMasterForm()
@@ -213,7 +225,6 @@ namespace MSFileFormat
 
                 ListViewItem lvi;
                 EMasterRec rec; 
-                //float dt;
 
                 for (int i = 0; i < num; i++) {
                     rec.asc1 = br.ReadByte(); 
@@ -264,10 +275,12 @@ namespace MSFileFormat
 
             }
             catch (IOException e) {
-                MessageBox.Show(e.Message, "Error reading EMASTER file", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show(e.Message, "Error reading EMASTER file", 
+                                MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
             catch (UnauthorizedAccessException e) {
-                MessageBox.Show(e.Message, "Error reading EMASTER file", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show(e.Message, "Error reading EMASTER file", 
+                                MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
             finally {
                 if (br != null)
@@ -322,6 +335,5 @@ namespace MSFileFormat
             }
         }
 
-	}
+    }
 }
-

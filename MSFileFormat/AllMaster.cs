@@ -1,9 +1,21 @@
 /*
- * Copyright (C) 2006-2014 Robert Iwancz
+ *  Copyright (C) 2006-2014 Robert Iwancz
  * 
- * Released under the GNU General Public License.  See LICENSE.TXT
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * 
  */
+ 
 using System;
 using System.Drawing;
 using System.Collections;
@@ -223,21 +235,21 @@ namespace MSFileFormat
         
         struct MasterRec {
             public byte FileNumber;
-            public byte FileType1, FileType2;  // CT file type = 0'e' (5 or 7 flds)
-            public byte RecLen;                //record length in bytes (4 x NumFields)
+            public byte FileType1, FileType2;   // CT file type = 0'e' (5 or 7 flds)
+            public byte RecLen;                 //record length in bytes (4 x NumFields)
             public byte NumFields;
             public byte Reserved1;
-            public byte CenturyIndicator;      // (Or reserved???)
-            public string Name;                // 16 bytes
+            public byte CenturyIndicator;       // (Or reserved???)
+            public string Name;                 // 16 bytes
             public byte Reserved2;
-            public byte CTFlag;                // ????? if CT ver. 2.8, 'Y'; o.w., anything else
-            public uint FirstDate;            // 4 bytes MBF
-            public uint LastDate;             // 4 bytes MBF
-            public byte TimeInterval;          // (D,W,M) 1 Char
-            public ushort IDATimeBase;         // Intraday time base (Or reserved??)
-            public string Symbol;              // 14 bytes
-            public byte Reserved3;             // Must be a space for Metastock???
-            public byte Flag;                  // ' ' or '*' for autorun
+            public byte CTFlag;                 // ????? if CT ver. 2.8, 'Y'; o.w., anything else
+            public uint FirstDate;              // 4 bytes MBF
+            public uint LastDate;               // 4 bytes MBF
+            public byte TimeInterval;           // (D,W,M) 1 Char
+            public ushort IDATimeBase;          // Intraday time base (Or reserved??)
+            public string Symbol;               // 14 bytes
+            public byte Reserved3;              // Must be a space for MS???
+            public byte Flag;                   // ' ' or '*' for autorun
             public byte Reserved4;
             
             public string [] ToStringArray() {
@@ -263,10 +275,9 @@ namespace MSFileFormat
                     Reserved3.ToString("X2"),
                     Flag.ToString("X2"),
                     Reserved4.ToString("X2")
-                                     };
+                };
             }
         };
-
 
 
         public void LoadMasterFile() {
@@ -293,9 +304,9 @@ namespace MSFileFormat
 
             FileStream fs = null;
             BinaryReader br = null;
-            //using (FileStream fs = new FileStream("C:\\Temp\\ASXGame\\Master", FileMode.Open)) 
+
             try {
-                fs = new FileStream("C:\\Temp\\ASXGame\\Master", FileMode.Open);
+                fs = new FileStream("C:\\Temp\\ASX\\Master", FileMode.Open);
                 br = new BinaryReader(fs);
                 int num = br.ReadInt16();
                 int max = br.ReadInt16();
@@ -304,7 +315,6 @@ namespace MSFileFormat
                 MaxText.Text = max.ToString();
                 RemainText.Text = ConvertToHex(buffer, 16);
 
-                //byte[] tempbuf = new byte[200];
                 char[] namebuf = new char[20];
                 char[] symbuf = new char [20];
                 ListViewItem lvi;
@@ -338,7 +348,8 @@ namespace MSFileFormat
 
             }
             catch (IOException e) {
-                MessageBox.Show(e.Message, "Error reading MASTER file", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show(e.Message, "Error reading MASTER file", 
+            	                MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
             finally {
                 if (br != null)
@@ -389,18 +400,15 @@ namespace MSFileFormat
             msbin2ieeVariant c;
             UInt16 man;
             UInt16 exp;
-            //float testF = 0; 
 
             c.a = 0; // to eliminate compiler warnings
             c.b = src;
-            //testF = 0.75f;
 
             if (c.b > 0) {      
                 man = (UInt16) (c.b >> 16);
                 exp = (UInt16) ((man & 0xff00u) - 0x0200u);
-                //if (exp & 0x8000 != man & 0x8000)
-                //    return 1;   /* exponent overflow */
-                man = (UInt16) (man & 0x7fu | (man << 8) & 0x8000u);   /* move sign */
+
+                man = (UInt16) (man & 0x7fu | (man << 8) & 0x8000u);   // move sign 
                 man |= (UInt16) (exp >> 1);
                 c.b = (c.b & 0xffffu); 
                 c.b |= (UInt32) (man << 16);

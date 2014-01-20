@@ -1,3 +1,21 @@
+/*
+ *  Copyright (C) 2006-2014 Robert Iwancz
+ * 
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
+ */
+
 using System;
 using System.Drawing;
 using System.Collections;
@@ -354,10 +372,13 @@ namespace MSFileFormat
         }
 
 
-        private void StockView_ColumnClick(object sender, System.Windows.Forms.ColumnClickEventArgs e) {
-            // Set the ListViewItemSorter property to a new ListViewItemComparer object.
+        private void StockView_ColumnClick(object sender, 
+		                                   System.Windows.Forms.ColumnClickEventArgs e) {
+            // Set the ListViewItemSorter property to a new 
+            // ListViewItemComparer object.
             this.StockView.ListViewItemSorter = new ListViewItemComparer(e.Column);
-            // Call the sort method to manually sort the column based on the ListViewItemComparer implementation.
+            // Call the sort method to manually sort the column based on the 
+            // ListViewItemComparer implementation.
             StockView.Sort();
         
         }
@@ -372,13 +393,14 @@ namespace MSFileFormat
                 col=column;
             }
             public int Compare(object x, object y) {
-                return String.Compare(((ListViewItem)x).SubItems[col].Text, ((ListViewItem)y).SubItems[col].Text);
+                return String.Compare(((ListViewItem)x).SubItems[col].Text, 
+            	                      ((ListViewItem)y).SubItems[col].Text);
             }
         }
 
         private void miExportExportAll_Click(object sender, System.EventArgs e) {
             saveFileDialog.Filter = "Comma Separated Values (.csv)|*.csv|All Files (*.*)|*.*";
-            //saveFileDialog.AddExtension = false;
+            
             if (saveFileDialog.ShowDialog() == DialogResult.OK) {
                 ExportData(saveFileDialog.FileName, false);
             }        
@@ -386,7 +408,7 @@ namespace MSFileFormat
 
         private void miExportExport3Sym_Click(object sender, System.EventArgs e) {
             saveFileDialog.Filter = "Comma Separated Values (.csv)|*.csv|All Files (*.*)|*.*";
-            //saveFileDialog.AddExtension = false;
+            
             if (saveFileDialog.ShowDialog() == DialogResult.OK) {
                 ExportData(saveFileDialog.FileName, true);
             }                
@@ -401,7 +423,8 @@ namespace MSFileFormat
         }
 
         protected static void Unimplemented() {
-            MessageBox.Show("Not yet implemented", "Unimplemented", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            MessageBox.Show("Not yet implemented", "Unimplemented", 
+        	                MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
 	}
 
