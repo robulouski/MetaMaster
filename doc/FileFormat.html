@@ -1,0 +1,880 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+    <HEAD>
+
+        <title>File Format</title>
+
+        <style type="text/css">
+
+body { font-family: verdana, arial, helvetica; font-size: 10pt; margin: 2em; }
+p { font-size: 10pt }
+h1, h2, h3 { color: rgb(0, 100, 0); }
+table {
+	font-size: 10pt;
+	background-color: rgb(60, 180, 60);
+	margin-left:auto;
+	margin-right:auto;
+}
+
+table.dtable {
+	width: 600px;
+}
+
+thead { background-color: rgb(60, 180, 60); padding: 10px; }
+caption {
+	/* font-family: "Arial Black", Arial, sans-serif; */
+
+	font-size: 12pt;
+	font-weight: bold;
+	color: rgb(0, 100, 0);
+
+	background-color: rgb(255, 255, 220);
+	border: 2px solid rgb(220, 220, 160);
+	padding: 10px;
+	margin-left:auto;
+	margin-right:auto;
+}
+tbody { background-color: rgb(255, 255, 245); }
+table.htable td, table.htable th { padding: 7px; }
+table.dtable tbody tr td, table.dtable thead tr th { padding: 5px; }
+/* table.dtable thead tr th { padding: 2px; } */
+
+	</style>
+
+        <meta name="GENERATOR" content="Microsoft Visual Studio .NET 7.1">
+        <!-- <meta name="vs_targetSchema" content="http://schemas.microsoft.com/intellisense/ie5"> --></HEAD>
+    <body>
+    	<div style="border-style:solid; border-width: 2px; border-color: rgb(60, 180, 60);
+    			    margin: 40px 80px 40px 80px; padding: 15px 30px 15px 30px;
+    			    background-color: rgb(245, 255, 240); ">
+		<p style="font-size: 8pt;">
+		This document (partially) describes a (crappy) file format for 
+		historical stock market price data.  Any resemblance to  real file 
+		formats, living or dead, is most likely coincidental.  It is
+		provided for entertainment purposes only, because we all know how
+		entertaining stock market data formats are.
+		</p>
+		</div>
+
+
+        <h1>Stock Market Data File Format</h1>
+        <p>Historical stock price data is stored in files named <strong>
+			Fxxx.DAT</strong> (where xxx=1..255) and <strong>Fxxxx.MWD</strong>
+			(where xxxx=257..2000).  Each directory contains one or more index
+			files, which identify which stock a ".DAT" or ".MWD"
+			file belongs to.  There should be one entry in an index file for each
+			.DAT and .MWD file in that directory.
+		</p>
+		<p>	There are three types of index files:
+		</p>
+			<ul>
+				<li><strong><a href="#master">MASTER</a></strong></li>
+				<li><strong><a href="#emaster">EMASTER</a></strong></li>
+				<li><strong><a href="#xmaster">XMASTER</a></strong></li>
+			</ul>
+		<p><strong>MASTER</strong> and <strong>EMASTER</strong> provide the index
+		    for .DAT files, while <strong>XMASTER</strong> provides the index for .WMD
+		    files.
+	    </p>
+		<p>
+		    <strong>MASTER</strong>, <strong>EMASTER</strong>  and .DAT files represent
+		    an older versions of the file format, and
+			due to limitations of the file format itself, there can only be a maximum
+			of 255 .DAT files per directory.  (i.e. only 255 securities per directory.)
+		</p>
+		<p>
+			<strong>XMASTER</strong> and .MWD files are a more recent update to the
+			format, and don't have the 255 file per directory limit.  (2000 .MWD files
+			per directory is a limit imposed by some software, but this appears to be
+			arbitrary, and the file format itself can support more than this.)
+		</p>
+		<p>
+			Generally, it appears that <strong>MASTER</strong> and <strong>
+			EMASTER</strong> files are always present in each directory and
+			both are updated.  I don't know why, because <strong>EMASTER
+			</strong> contains the same information as <strong>MASTER</strong>
+			&#8212 and more &#8212 so <strong>MASTER</strong> is redundant.
+			Actually, <strong>XMASTER</strong> makes both of them redundant.
+			Yet, if a directory contains less than 256 data files (i.e. less
+			than 256 securities in that directory), then there is no <strong>
+			XMASTER</strong> and only .DAT data files (i.e. <strong>F1.DAT
+			</strong>...<strong>F255.DAT</strong>) along with <strong>EMASTER</strong> and the
+			redundant <strong>MASTER</strong>.  However, if there are more
+			than 255 data files in the directory, there will still be <strong>
+			MASTER</strong> and <strong>EMASTER</strong>, with data for the
+			first 255 securities in the directory stored in .DAT files.  In
+			this case, there will also be an <strong>XMASTER</strong> file,
+			with the remaining securities in that directory stored in <strong>
+			Fxxx.MWD</strong> files (i.e. <strong>F256.MWD</strong>... <strong>
+			Fxxxx.MWD</strong>).  So in this case <strong>MASTER</strong> and
+			<strong>EMASTER </strong> will contain records for the first 255
+			securities, and <strong>XMASTER</strong> will contain records for
+			all the rest.  This seems kind of silly, and means updating the
+			data will inevitably take longer.  (Presumably it's for backwards
+			compatibility, but if a user is placing more than 255 securities
+			in a directory, then surely they'll be using software that
+			supports the new file format, and therefore will not be concerned with
+			compatibility with the older format.)
+	 	</p>
+
+		<p>
+			Note that all three index files store dates in a different format
+			(as detailed below).
+		</p>
+        <p>
+            <strong>Fxx.DAT</strong> files store quotations in either 5 field
+            (date/high/low/close/volume), 6 or 7 field
+            (date/open/high/low/close/volume/openinterest) format.
+        </p>
+
+        <p>&nbsp;</p>
+        <p>&nbsp;</p>
+
+        <h2 id="master">MASTER</h2>
+        <p>File is made of up fixed length records of 53 bytes.  First record is the
+            header. All the remaining records are entries for each .DAT file in the
+            directory.</p>
+        <p>Dates are stored in Microsoft Binary Format.</p>
+        <ul>
+            <li>
+                Dates in the 1900's are stored as numbers with the format <code>yymmdd</code>.</li>
+            <li>
+                Dates after 31 December 1999 are stored as seven digit numbers, with a leading
+                1 for the century: <code>1yymmdd</code></li>
+        </ul>
+
+		<table class="htable">
+			<caption>
+				MASTER Header Record</caption>
+			<thead>
+				<tr>
+					<th>Offset</th>
+					<th>End Offset</th>
+					<th>Length</th>
+					<th>Description</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr align="center">
+					<td>0</td>
+					<td>1</td>
+					<td>2</td>
+					<td align="left">Number of records. (Only one byte used???)</td>
+				</tr>
+				<tr align="center">
+					<td>2</td>
+					<td>3</td>
+					<td>2</td>
+					<td align="left">Hightest record number used. (Only one byte used???)</td>
+				</tr>
+				<tr align="center">
+					<td>4</td>
+					<td>48</td>
+					<td>45</td>
+					<td align="left">Fill/Unused, all zeros.</td>
+				</tr>
+				<tr align="center">
+					<td>49</td>
+					<td>52</td>
+					<td>4</td>
+					<td align="left">4 bytes of mystery binary data.</td>
+				</tr>
+			</tbody>
+		</table> <!-- MASTER HEADER END -->
+
+        <p>&nbsp;</p>
+        <p>&nbsp;</p>
+
+		<table class="dtable"> <!-- MASTER DETAIL START -->
+			<caption>
+				MASTER Data Record</caption>
+			<thead>
+				<tr>
+					<th>
+						Field</th>
+					<th>
+						Offset</th>
+					<th>
+						End Offset</th>
+					<th>
+						Length</th>
+					<th>
+						Description</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr>
+					<td>File number</td>
+					<td>0</td>
+					<td>0</td>
+					<td>1</td>
+					<td>Number of the Fxxx.DAT file containing historical data for this security.</td>
+				</tr>
+				<tr>
+					<td>File type</td>
+					<td>1</td>
+					<td>2</td>
+					<td>2</td>
+					<td>CT file type = 0'e' (5 or 7 flds)
+					</td>
+				</tr>
+				<tr>
+					<td>Record length</td>
+					<td>3</td>
+					<td>3</td>
+					<td>1</td>
+					<td>record length in bytes (4 x NumFields)
+					</td>
+				</tr>
+				<tr>
+					<td>Number of fields</td>
+					<td>4</td>
+					<td>4</td>
+					<td>1</td>
+					<td>
+					</td>
+				</tr>
+				<tr>
+					<td>Reserved</td>
+					<td>5</td>
+					<td>5</td>
+					<td>1</td>
+					<td>
+					</td>
+				</tr>
+				<tr>
+					<td><p>Century indicator</p>
+						<p>(or Reserved???)</p>
+					</td>
+					<td>6</td>
+					<td>6</td>
+					<td>1</td>
+					<td>
+					</td>
+				</tr>
+				<tr>
+					<td>Security name</td>
+					<td>7</td>
+					<td>22</td>
+					<td>16</td>
+					<td>
+					</td>
+				</tr>
+				<tr>
+					<td>Reserved</td>
+					<td>23</td>
+					<td>23</td>
+					<td>1</td>
+					<td>
+					</td>
+				</tr>
+				<tr>
+					<td>CT flag</td>
+					<td>24</td>
+					<td>24</td>
+					<td>1</td>
+					<td>??? if CT ver. 2.8, 'Y'; o.w., anything else
+					</td>
+				</tr>
+				<tr>
+					<td>First date</td>
+					<td>25</td>
+					<td>28</td>
+					<td>4</td>
+					<td>Date of first data entry in data file, in Microsoft Binary Float format
+					</td>
+				</tr>
+				<tr>
+					<td>Last date</td>
+					<td>29</td>
+					<td>32</td>
+					<td>4</td>
+					<td>Date of last data entry in data file, in Microsoft Binary Float format
+					</td>
+				</tr>
+				<tr>
+					<td>Time interval</td>
+					<td>33</td>
+					<td>33</td>
+					<td>1</td>
+					<td>D,W,M
+					</td>
+				</tr>
+				<tr>
+					<td>
+						<P>IDATimeBase
+						</P>
+						<P>(Or reserved?)</P>
+					</td>
+					<td>34</td>
+					<td>35</td>
+					<td>2</td>
+					<td>Intraday time (Or reserved???) It could be just first byte that's used for
+						intraday time, whatever that is, the second byte might be unused.
+					</td>
+				</tr>
+				<tr>
+					<td>Symbol</td>
+					<td>36</td>
+					<td>49</td>
+					<td>14</td>
+					<td>
+					</td>
+				</tr>
+				<tr>
+					<td>Reserved</td>
+					<td>50</td>
+					<td>50</td>
+					<td>1</td>
+					<td>
+					</td>
+				</tr>
+				<tr>
+					<td>Autorun flag</td>
+					<td>51</td>
+					<td>51</td>
+					<td>1</td>
+					<td>' ' or '*' for autorun
+					</td>
+				</tr>
+				<tr>
+					<td>Reserved</td>
+					<td>52</td>
+					<td>52</td>
+					<td>1</td>
+					<td>
+					</td>
+				</tr>
+			</tbody>
+		</table> <!-- MASTER DETAIL END -->
+
+        <p>&nbsp;</p>
+        <p>&nbsp;</p>
+
+
+        <h2 id="emaster">EMASTER</h2>
+		<p>File is made of up fixed length records of 192 bytes.  First record is the
+            header. All the remaining records are entries for each .DAT file in the
+            directory. </p>
+        <p>String fields appear to be null terminated.</p>
+        <p>Dates are stored in IEEE float format.  (Little Endian)</p>
+        <ul>
+            <li>
+                Dates in the 1900's are stored as numbers with the format <code>yymmdd</code>.</li>
+            <li>
+                Dates after 31 December 1999 are stored as seven digit numbers, with a leading
+                1 for the century: <code>1yymmdd</code></li>
+        </ul>
+
+
+		<!-- EEE EMASTER HEADER START -->
+		<table class="htable">
+			<caption>
+				EMASTER Header Record</caption>
+			<thead>
+				<tr>
+					<th>
+						Offset</th>
+					<th>
+						End Offset</th>
+					<th>
+						Length</th>
+					<th>
+						Description</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr align="center">
+					<td>0</td>
+					<td>1</td>
+					<td>2</td>
+					<td align="left">Number of records. (Only one byte used???)</td>
+				</tr>
+				<tr align="center">
+					<td>2</td>
+					<td>3</td>
+					<td>2</td>
+					<td align="left">Hightest record number used. (Only one byte used???)</td>
+				</tr>
+				<tr align="center">
+					<td>4</td>
+					<td>48</td>
+					<td>45</td>
+					<td align="left">Fill/unused?</td>
+				</tr>
+				<tr align="center">
+					<td>49</td>
+					<td>52</td>
+					<td>4</td>
+					<td align="left">4 Bytes of mystery binary data</td>
+				</tr>
+				<tr align="center">
+					<td>53</td>
+					<td>191</td>
+					<td>139</td>
+					<td align="left">Copyright info</td>
+				</tr>
+			</tbody>
+		</table> <!-- EEE EMASTER HEADER END -->
+
+        <p>&nbsp;</p>
+        <p>&nbsp;</p>
+
+		<!-- EEE EMASTER DETAIL START -->
+		<table class="dtable">
+			<caption>
+				EMASTER Data Record</caption>
+			<thead>
+				<tr>
+					<th>
+						Field</th>
+					<th>
+						Offset</th>
+					<th>
+						End Offset</th>
+					<th>
+						Length</th>
+					<th>
+						Description</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr>
+					<td>ASC</td>
+					<td>0</td>
+					<td>1</td>
+					<td>2</td>
+					<td>Looks like two ASCII digits. (Chat values???)</td>
+				</tr>
+				<tr>
+					<td>File number</td>
+					<td>2</td>
+					<td>2</td>
+					<td>1</td>
+					<td>Number of the Fxxx.DAT file containing historical data for this security.</td>
+				</tr>
+				<tr>
+					<td>Fill1</td>
+					<td>3</td>
+					<td>5</td>
+					<td>3</td>
+					<td>Fill/Reserved</td>
+				</tr>
+				<tr>
+					<td>Number of fields</td>
+					<td>6</td>
+					<td>6</td>
+					<td>1</td>
+					<td>
+					</td>
+				</tr>
+
+				<tr>
+					<td>Delete char</td>
+					<td>7</td>
+					<td>7</td>
+					<td>1</td>
+					<td>ASCII 127
+					</td>
+				</tr>
+				<tr>
+					<td>Fill Byte 1</td>
+					<td>8</td>
+					<td>8</td>
+					<td>1</td>
+					<td>
+					</td>
+				</tr>
+				<tr>
+					<td>Autorun flag</td>
+					<td>9</td>
+					<td>9</td>
+					<td>1</td>
+					<td>'*' for Autorun, space otherwise.  Don't know what Autorun means.
+					</td>
+				</tr>
+				<tr>
+					<td>Fill Byte 2</td>
+					<td>10</td>
+					<td>10</td>
+					<td>1</td>
+					<td>
+					</td>
+				</tr>
+
+				<tr>
+					<td>Symbol</td>
+					<td>11</td>
+					<td>24</td>
+					<td>14</td>
+					<td>Stock ticker symbol
+					</td>
+				</tr>
+				<tr>
+					<td>Fill 2</td>
+					<td>25</td>
+					<td>31</td>
+					<td>7</td>
+					<td>
+					</td>
+				</tr>
+				<tr>
+					<td>Security Name</td>
+					<td>32</td>
+					<td>47</td>
+					<td>16</td>
+					<td>Name of security.  The name is truncated or abreviated to fit within 16 chars.
+						If the full name is more than 16 chars, then the full version appears in what
+						looks like an optional field (ExtName) at the end of the record.</td>
+				</tr>
+				<tr>
+					<td>Fill3</td>
+					<td>48</td>
+					<td>59</td>
+					<td>12</td>
+					<td>
+					</td>
+				</tr>
+				<tr>
+					<td>Time Frame</td>
+					<td>60</td>
+					<td>60</td>
+					<td>1</td>
+					<td>Time frame of data in the detail file: I=Intraday, D=Daily, W=Weekly, M=Monthly
+					</td>
+				</tr>
+				<tr>
+					<td>Fill4 (&amp; Time Interval???)</td>
+					<td>61</td>
+					<td>63</td>
+					<td>3</td>
+					<td>
+					</td>
+				</tr>
+				<tr>
+					<td>First date</td>
+					<td>64</td>
+					<td>67</td>
+					<td>4</td>
+					<td>Date of first entry in data file, in IEEE float format
+					</td>
+				</tr>
+				<tr>
+					<td>Begin Trade Time</td>
+					<td>68</td>
+					<td>71</td>
+					<td>4</td>
+					<td>(Always zero in my sample daily data.  Maybe only used for Intraday or other time frames???)
+					</td>
+				</tr>
+				<tr>
+					<td>Last date</td>
+					<td>72</td>
+					<td>75</td>
+					<td>4</td>
+					<td>Date of last entry in data file, in IEEE float format
+					</td>
+				</tr>
+				<tr>
+					<td>End Trade Time</td>
+					<td>76</td>
+					<td>79</td>
+					<td>4</td>
+					<td>(Always zero in my sample daily data.  Maybe only used for Intraday or other time frames???)
+					</td>
+				</tr>
+				<tr>
+					<td>Start Time Range</td>
+					<td>80</td>
+					<td>83</td>
+					<td>4</td>
+					<td>(Always zero in my sample daily data.  Maybe only used for Intraday or other time frames???)
+					</td>
+				</tr>
+				<tr>
+					<td>End Time Range</td>
+					<td>84</td>
+					<td>87</td>
+					<td>4</td>
+					<td>(Always zero in my sample daily data.  Maybe only used for Intraday or other time frames???)
+					</td>
+				</tr>
+
+				<tr><td>&nbsp;</td>
+				<td colspan="4">
+				The remaining fields appear to be either new/custom/optional aditions to the file format.
+				(What little documentation I have managed to find suggests the remainder of the record is
+				just filler.  But my data files do contain data in this part of the record.)
+				</td></tr>
+
+				<tr>
+					<td>Fill5</td>
+					<td>88</td>
+					<td>125</td>
+					<td>38</td>
+					<td>All NULLs.
+					</td>
+				</tr>
+				<tr>
+					<td>Something???</td>
+					<td>126</td>
+					<td>129</td>
+					<td>4</td>
+					<td>4 bytes of binary data.  Have no idea what it is.
+					</td>
+				</tr>
+				<tr>
+					<td>Fill6</td>
+					<td>130</td>
+					<td>138</td>
+					<td>9</td>
+					<td>All NULLs.
+					</td>
+				</tr>
+				<tr>
+					<td>Extended Security Name</td>
+					<td>139</td>
+					<td>191</td>
+					<td>53</td>
+					<td>If and only if the "Name" field has a truncated security name,
+					then the full name appears here.  Otherwise, it's all NULLs.
+					I don't know if the name can take up all 53 bytes, or if there's
+					some smaller maximum length for the name.  In any case,
+					the rest of the record after the name data is all NULLs.
+					</td>
+				</tr>
+
+			</tbody>
+		</table> <!-- EEE EMASTER DETAIL END -->
+
+
+        <p>&nbsp;</p>
+        <p>&nbsp;</p>
+
+
+        <h2 id="xmaster">XMASTER</h2>
+
+		<p>File is made of up fixed length records of 150 bytes.  First record is the
+            header. All the remaining records are entries for each .MWD file in the
+            directory. </p>
+        <p>String fields appear to be null terminated.
+        (But not necessarily padded with null characters</p>
+        <p>Dates are stored as 4 byte (unsigned) integers (little endian) with the format
+        	<code>yyyymmdd</code>.
+		</p>
+
+		<!-- XXX XMASTER HEADER START -->
+		<table class="htable">
+			<caption>
+				XMASTER Header Record</caption>
+			<thead>
+				<tr>
+					<th>
+						Offset</th>
+					<th>
+						End Offset</th>
+					<th>
+						Length</th>
+					<th>
+						Description</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr align="center">
+					<td>0</td>
+					<td>9</td>
+					<td>10</td>
+					<td align="left">10 bytes of binary data</td>
+				</tr>
+
+				<tr align="center">
+					<td>10</td>
+					<td>13</td>
+					<td>4</td>
+					<td align="left">Number of records.</td>
+				</tr>
+				<tr align="center">
+					<td>14</td>
+					<td>17</td>
+					<td>4</td>
+					<td align="left">Hightest record number used. (??????)</td>
+				</tr>
+				<tr align="center">
+					<td>18</td>
+					<td>21</td>
+					<td>4</td>
+					<td align="left">Next record number to use???</td>
+				</tr>
+
+				<tr align="center">
+					<td>22</td>
+					<td>149</td>
+					<td>128</td>
+					<td align="left">Copyright info</td>
+				</tr>
+			</tbody>
+		</table> <!-- XXX XMASTER HEADER END -->
+
+
+        <p>&nbsp;</p>
+        <p>&nbsp;</p>
+
+		<table class="dtable"> <!-- XXX XMASTER DETAIL START -->
+			<caption>
+				XMASTER Data Record</caption>
+			<thead>
+				<tr>
+					<th>
+						Field</th>
+					<th>
+						Offset</th>
+					<th>
+						End Offset</th>
+					<th>
+						Length</th>
+					<th>
+						Description</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr>
+					<td>Start Byte</td>
+					<td>0</td>
+					<td>0</td>
+					<td>1</td>
+					<td>The first byte of each data record appears to be 0x01.</td>
+				</tr>
+
+				<tr>
+					<td>Symbol</td>
+					<td>1</td>
+					<td>15</td>
+					<td>15</td>
+					<td>Stock ticker symbol
+					</td>
+				</tr>
+				<tr>
+					<td>Security Name</td>
+					<td>16</td>
+					<td>61</td>
+					<td>46</td>
+					<td>Name of security.</td>
+				</tr>
+				<tr>
+					<td>Time Frame</td>
+					<td>62</td>
+					<td>62</td>
+					<td>1</td>
+					<td>Time frame of data in the detail file: I=Intraday, D=Daily, W=Weekly, M=Monthly
+					</td>
+				</tr>
+
+				<tr>
+					<td>Fill1</td>
+					<td>63</td>
+					<td>64</td>
+					<td>2</td>
+					<td></td>
+				</tr>
+				<tr>
+					<td>File number</td>
+					<td>65</td>
+					<td>66</td>
+					<td>2</td>
+					<td>Number of the Fxxx.MWD file containing historical data for this security.</td>
+				</tr>
+
+				<tr>
+					<td>Fill2</td>
+					<td>67</td>
+					<td>69</td>
+					<td>3</td>
+					<td>Fill (Unless the file number is 4 bytes, in which case there's only 1 fill byte here.)</td>
+				</tr>
+				<tr>
+					<td>Delete char</td>
+					<td>70</td>
+					<td>70</td>
+					<td>1</td>
+					<td>ASCII 127.  Don't know what this means/represents.
+					</td>
+				</tr>
+				<tr>
+					<td>Fill3</td>
+					<td>71</td>
+					<td>79</td>
+					<td>9</td>
+					<td>
+					</td>
+				</tr>
+				<tr>
+					<td>Date</td>
+					<td>80</td>
+					<td>83</td>
+					<td>4</td>
+					<td>A date of some sort, don't know what this date is.
+					</td>
+				</tr>
+				<tr>
+					<td>Mystery number</td>
+					<td>84</td>
+					<td>87</td>
+					<td>4</td>
+					<td>4 bytes of mystery data.  At first I thought is was a date, but doesn't appear to be.
+					</td>
+				</tr>
+				<tr>
+					<td>Fill4</td>
+					<td>88</td>
+					<td>103</td>
+					<td>16</td>
+					<td>
+					</td>
+				</tr>
+				<tr>
+					<td>First Date 1 ???</td>
+					<td>104</td>
+					<td>107</td>
+					<td>4</td>
+					<td>Date of first price data for the security.
+					</td>
+				</tr>
+				<tr>
+					<td>First Date 2 ???</td>
+					<td>108</td>
+					<td>111</td>
+					<td>4</td>
+					<td>Appears to be the same as the previous field.
+					</td>
+				</tr>
+				<tr>
+					<td>Fill5</td>
+					<td>112</td>
+					<td>115</td>
+					<td>4</td>
+					<td>
+					</td>
+				</tr>
+				<tr>
+					<td>Last Date</td>
+					<td>116</td>
+					<td>119</td>
+					<td>4</td>
+					<td>Date of last price data for the security.
+					</td>
+				</tr>
+				<tr>
+					<td>Fill6</td>
+					<td>120</td>
+					<td>149</td>
+					<td>30</td>
+					<td>
+					</td>
+				</tr>
+
+			</tbody>
+		</table> <!-- XXX XMASTER DETAIL END -->
+
+
+    </body>
+</html>
